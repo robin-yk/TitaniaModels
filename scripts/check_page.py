@@ -112,7 +112,8 @@ const P = require(process.env.PW + '/node_modules/playwright');
   const before = await pg.locator('#jrB').innerHTML();
   await pg.selectOption('#jrReduction','0');
   out.release.changed = before !== await pg.locator('#jrB').innerHTML();
-  await pg.locator('#ws-distribution details').filter({has:pg.locator('summary',{hasText:'Method'})}).locator('summary').click();
+  await pg.click('#jrModelTab');
+  await pg.locator('#jrModel').waitFor({state:'visible'});
   out.release.math = await pg.locator('#ws-distribution math').count();
 
   out.scope = await pg.evaluate(() =>

@@ -58,19 +58,27 @@
 
 <section id="ws-distribution" class="ws" style="display:none">
   <div class="wshead"><h2>Vacancy distribution</h2><p class="sub">R600 during H₂ reduction and CO₂ reoxidation at 600 °C. The calculation follows oxygen vacancies and Ti³⁺ from the surface to the centre of a 900 nm rutile particle.</p></div>
-  <p>The measured gas-release rates set the surface source and sink. The depth-dependent transport barriers are assumed: 1.6 eV in the outer 30 nm and 2.2 eV inside. The calculation starts with no defects.</p>
-  <div class="panel pad">
-    <label>Reduction profile <select id="jrReduction"></select></label>
-    <label style="margin-left:24px">Reoxidation profile <select id="jrReoxidation"></select></label>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px;margin-top:24px">
+  <div class="wsgrid">
+  <aside class="controls">
+    <p class="controls-kicker">R600 · 600 °C</p>
+    <div class="c"><label for="jrReduction">Reduction profile</label><select id="jrReduction"></select></div>
+    <div class="c"><label for="jrReoxidation">Reoxidation profile</label><select id="jrReoxidation"></select></div>
+    <table class="kv"><tr><th>Particle diameter</th><td>900 nm</td></tr><tr><th>Outer 30 nm barrier</th><td>1.6 eV</td></tr><tr><th>Interior barrier</th><td>2.2 eV</td></tr></table>
+    <p class="readout">The transport barriers are assumed. Measured gas-release rates set the surface source and sink. The initial particle has no defects.</p>
+  </aside>
+  <div class="wsmain">
+  <div class="tabs" role="tablist" aria-label="Distribution details"><button type="button" class="tab active" id="jrResultsTab" role="tab" aria-selected="true" aria-controls="jrResults">Results</button><button type="button" class="tab" id="jrModelTab" role="tab" aria-selected="false" aria-controls="jrModel">Model</button></div>
+  <div id="jrResults" role="tabpanel" aria-labelledby="jrResultsTab">
+    <div class="jr-figures">
       <figure style="margin:0"><div id="jrA"></div><button type="button" data-jr-download="jrA">Download figure</button><figcaption>Vacancies accumulated during reduction. The point at 1800 s is the measured R600 inventory, 94 µmol O g⁻¹.</figcaption></figure>
       <figure style="margin:0"><div id="jrB"></div><button type="button" data-jr-download="jrB">Download figure</button><figcaption>Vacancy fraction of oxygen sites at each depth. The selected reduction and reoxidation times are shown.</figcaption></figure>
       <figure style="margin:0"><div id="jrC"></div><button type="button" data-jr-download="jrC">Download figure</button><figcaption>Ti³⁺ fraction of titanium sites at the same times. The joint state model couples the vacancy and electron populations.</figcaption></figure>
       <figure style="margin:0"><div id="jrD"></div><button type="button" data-jr-download="jrD">Download figure</button><figcaption>Remaining vacancies and oxygen incorporated into the solid during reoxidation. Each CO molecule formed fills one oxygen vacancy.</figcaption></figure>
     </div>
   </div>
+  <div id="jrModel" role="tabpanel" aria-labelledby="jrModelTab" hidden>
   <details class="panel pad" style="margin-top:24px"><summary>Tested transport cases</summary><p>Each row uses the same R600 source and sink. “Completed” means that the calculation reached 600 s of reoxidation. A stopped calculation records its last computed time.</p><div style="overflow:auto" id="jrCases"></div></details>
-  <details class="panel pad" style="margin-top:24px"><summary>Method</summary>
+  <details class="panel pad" style="margin-top:24px" open><summary>Method</summary>
     <h3>Joint vacancy and polaron states</h3>
     <p>State a of cell d has energy E, vacancy count v, electron count n, and degeneracy g. Its population is x = C p. The cell partition function gives the state probabilities. Charge enters through 2v − n.</p>
     \[Z_d=\sum_a g_{da}\exp\left[-\frac{E_{da}+(2v_{da}-n_{da})e\phi_d-v_{da}\mu_V-n_{da}\mu_e}{k_BT}\right],\qquad p_{da}=\frac{g_{da}}{Z_d}\exp\left[-\frac{E_{da}+(2v_{da}-n_{da})e\phi_d-v_{da}\mu_V-n_{da}\mu_e}{k_BT}\right]\]
@@ -84,6 +92,9 @@
     <p>A finite-volume Scharfetter–Gummel flux and backward Euler time step solve transport. The displayed case uses 320 interior cells, maximum reduction step 2.5 s, and maximum reoxidation step 0.05 s. The graphs show saved checkpoints.</p>
   </details>
   <details class="panel pad" style="margin-top:24px"><summary>Validation</summary><div id="jrValidation"></div><p>The integrated reduction source gives 95.719 µmol O g⁻¹. The measured R600 inventory is 94 µmol O g⁻¹. The endpoint difference is 1.83%. After 600 s of reoxidation, 14.194 µmol O g⁻¹ of vacancies remain and 81.525 µmol O g⁻¹ of vacancies have been filled. Both histories use the same depth-dependent mobility.</p><p>The source snapshot, input rates, raw results, and checks are stored in <code>pilot/joint_state_release</code>. The previous equilibrium distribution calculations remain in the source history and data archive.</p></details>
+  </div>
+  </div>
+  </div>
 </section>
 
 <!-- ========================================== gas-solid equilibrium -->

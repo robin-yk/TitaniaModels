@@ -6,6 +6,15 @@
   const oxProfiles = ox.filter(q => q.depth_nm);
   const color = ['#0072B2', '#D55E00'];
   const el = id => document.getElementById(id);
+  const tabs=[el('jrResultsTab'),el('jrModelTab')];
+  function selectTab(index){
+    tabs.forEach((tab,i)=>{tab.classList.toggle('active',i===index);tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;el(tab.getAttribute('aria-controls')).hidden=i!==index;});
+  }
+  tabs.forEach((tab,i)=>{
+    tab.addEventListener('click',()=>selectTab(i));
+    tab.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?1:1-i;selectTab(next);tabs[next].focus();}});
+  });
+  selectTab(0);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   function plot(id, letter, xlabel, ylabel, series, opt={}) {
     // Coordinates are points on a 5 × 5 inch (360 pt) publication panel.

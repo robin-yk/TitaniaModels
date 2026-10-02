@@ -43,6 +43,11 @@ h3{margin:20px 0 8px;color:var(--navy);font-size:17px;line-height:1.25}
    KPI row then the tables on the right */
 .wsgrid{display:grid;grid-template-columns:340px minmax(0,1fr);gap:28px;align-items:start}
 .wsgrid,.wsmain,.pubfig{min-width:0}
+.jr-figures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;margin-top:24px}
+.jr-figures figure{min-width:0}
+.jr-figures button{width:auto;margin:10px 0}
+#jrModel[hidden],#jrResults[hidden]{display:none}
+@media(max-width:760px){.jr-figures{grid-template-columns:1fr}}
 .wsgrid>aside{position:sticky;top:66px;max-height:calc(100vh - 80px);overflow-y:auto}
 .controls{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px 6px}
 .controls-kicker{margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line);
