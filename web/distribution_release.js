@@ -26,7 +26,12 @@
     for(const y of yt) { const raw=opt.log?10**y:y;svg+='<path d="M'+L+' '+Y(raw)+'h4" stroke="black" stroke-width="2"/><text x="'+(L-9)+'" y="'+(Y(raw)+5)+'" text-anchor="end" font-size="15">'+(opt.log?'10<tspan baseline-shift="super" font-size="10">'+Math.round(y)+'</tspan>':Number(y.toPrecision(2)))+'</text>'; }
     series.forEach((s,k)=>{
       if(s.point) svg+='<circle data-measured="94" cx="'+X(s.x[0])+'" cy="'+Y(s.y[0])+'" r="6" fill="white" stroke="black" stroke-width="1.2"/>';
-      else svg+='<path clip-path="url(#clip-'+id+')" data-series="'+esc(s.name)+'" d="'+s.x.map((x,i)=>(i?'L':'M')+X(x).toFixed(2)+' '+Y(s.y[i]).toFixed(2)).join(' ')+'" fill="none" stroke="'+(s.color||color[k])+'" stroke-width="2"/>';
+      else {
+        // The wiki plots distinct atomic planes as points, not a continuous profile.
+        const first=opt.depth?12:0;
+        for(let i=0;i<first;i++) svg+='<circle clip-path="url(#clip-'+id+')" data-atomic-plane="'+i+'" cx="'+X(s.x[i])+'" cy="'+Y(s.y[i])+'" r="3" fill="'+(s.color||color[k])+'"/>';
+        svg+='<path clip-path="url(#clip-'+id+')" data-series="'+esc(s.name)+'" d="'+s.x.slice(first).map((x,i)=>(i?'L':'M')+X(x).toFixed(2)+' '+Y(s.y[i+first]).toFixed(2)).join(' ')+'" fill="none" stroke="'+(s.color||color[k])+'" stroke-width="2"/>';
+      }
       svg+='<text x="'+(L+(opt.depth?65:9))+'" y="'+(opt.depth?T+H-35+k*18:T+20+k*18)+'" font-size="14" fill="'+(s.point?'black':s.color||color[k])+'">'+esc(s.name)+'</text>';
     });
     svg+='<text x="'+(L+W/2)+'" y="348" text-anchor="middle" font-size="18">'+esc(xlabel)+'</text><text transform="translate(22 '+(T+H/2)+') rotate(-90)" text-anchor="middle" font-size="18">'+esc(ylabel)+'</text></svg>';
