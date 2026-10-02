@@ -20,9 +20,10 @@
     // Coordinates are points on a 5 × 5 inch (360 pt) publication panel.
     const L=77.54,T=37.40,W=262.80,H=262.80;
     const tx=x=>opt.depth ? Math.log10(1+x) : x;
-    const ty=y=>opt.log ? Math.log10(Math.max(1e-10,y)) : y;
+    const ty=y=>opt.log ? Math.log10(y) : y;
+    const valid=(s,i)=>Number.isFinite(s.x[i]) && Number.isFinite(s.y[i]) && (!s.capacity || s.capacity[i]>0) && (!opt.log || s.y[i]>0);
     const xx=series.flatMap(s=>s.x).filter(Number.isFinite);
-    const yy=series.flatMap(s=>s.y).filter(Number.isFinite);
+    const yy=series.flatMap(s=>s.y.filter((y,i)=>valid(s,i)));
     const xmin=0,xmax=tx(Math.max(...xx)), ymin=opt.log ? Math.floor(Math.min(...yy.map(ty))) : 0;
     const ymax=opt.log ? Math.ceil(Math.max(...yy.map(ty))) : Math.ceil(Math.max(...yy)*1.05/25)*25;
     const X=x=>L+W*(tx(x)-xmin)/(xmax-xmin||1),Y=y=>T+H-H*(ty(y)-ymin)/(ymax-ymin||1);
@@ -38,8 +39,10 @@
       else {
         // The wiki plots distinct atomic planes as points, not a continuous profile.
         const first=opt.depth?12:0;
-        for(let i=0;i<first;i++) svg+='<circle clip-path="url(#clip-'+id+')" data-atomic-plane="'+i+'" cx="'+X(s.x[i])+'" cy="'+Y(s.y[i])+'" r="3" fill="'+(s.color||color[k])+'"/>';
-        svg+='<path clip-path="url(#clip-'+id+')" data-series="'+esc(s.name)+'" d="'+s.x.slice(first).map((x,i)=>(i?'L':'M')+X(x).toFixed(2)+' '+Y(s.y[i+first]).toFixed(2)).join(' ')+'" fill="none" stroke="'+(s.color||color[k])+'" stroke-width="2"/>';
+        for(let i=0;i<first;i++) if(valid(s,i)) svg+='<circle clip-path="url(#clip-'+id+')" data-atomic-plane="'+i+'" cx="'+X(s.x[i])+'" cy="'+Y(s.y[i])+'" r="3" fill="'+(s.color||color[k])+'"/>';
+        let connected=false;
+        const path=s.x.slice(first).map((x,j)=>{const i=j+first;if(!valid(s,i)){connected=false;return '';}const command=connected?'L':'M';connected=true;return command+X(x).toFixed(2)+' '+Y(s.y[i]).toFixed(2);}).join(' ');
+        svg+='<path clip-path="url(#clip-'+id+')" data-series="'+esc(s.name)+'" d="'+path+'" fill="none" stroke="'+(s.color||color[k])+'" stroke-width="2"/>';
       }
       svg+='<text x="'+(L+(opt.depth?65:9))+'" y="'+(opt.depth?T+H-35+k*18:T+20+k*18)+'" font-size="14" fill="'+(s.point?'black':s.color||color[k])+'">'+esc(s.name)+'</text>';
     });
@@ -49,7 +52,7 @@
   function profiles() {
     const a=red[+el('jrReduction').value],b=oxProfiles[+el('jrReoxidation').value];
     for(const [id,letter,key,label] of [['jrB','b','vacancy_pct','Vacancy fraction (%)'],['jrC','c','Ti3_pct','Ti³⁺ fraction (%)']])
-      plot(id,letter,'Depth (nm)',label,[{x:a.depth_nm,y:a[key],name:'Reduction, '+a.time_s+' s'},{x:b.depth_nm,y:b[key],name:'Reoxidation, '+b.time_s+' s'}],{depth:true,log:true});
+      plot(id,letter,'Depth (nm)',label,[a,b].map((q,i)=>({x:q.depth_nm,y:q[key],capacity:q[key==='Ti3_pct'?'titanium_capacity_umol_g':'oxygen_capacity_umol_g'],name:(i?'Reoxidation, ':'Reduction, ')+q.time_s+' s'})),{depth:true,log:true});
   }
   for(const [id,rows] of [['jrReduction',red],['jrReoxidation',oxProfiles]]) {
     el(id).innerHTML=rows.map((q,i)=>'<option value="'+i+'">'+q.time_s+' s</option>').join('');

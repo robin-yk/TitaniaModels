@@ -43,6 +43,32 @@ def test_latest_release_reoxidation_fills_vacancies():
     assert 'cumulative oxygen removal as CO' not in html
 
 
+def test_release_site_fractions_and_charge_balance():
+    import math
+    data = json.loads((ROOT / 'pilot/joint_state_release/page_data.json').read_text())
+    for history in ('reduction', 'reoxidation'):
+        for row in data[history]:
+            assert row['electron_total_umol_g'] == pytest.approx(2 * row['vacancy_total_umol_g'], abs=1e-6)
+            if 'depth_nm' not in row:
+                continue
+            for fraction, amount, capacity in [('Ti3_pct', 'electron_umol_g', 'titanium_capacity_umol_g'), ('vacancy_pct', 'vacancy_umol_g', 'oxygen_capacity_umol_g')]:
+                assert len(row[fraction]) == len(row[amount]) == len(row[capacity]) == len(row['depth_nm'])
+                for y, n, c in zip(row[fraction], row[amount], row[capacity]):
+                    assert all(math.isfinite(v) for v in (y, n, c))
+                    assert -1e-10 <= n <= c + 1e-8
+                    if c > 0:
+                        assert y == pytest.approx(100 * n / c, abs=1e-10)
+                    else:
+                        assert n == pytest.approx(0, abs=1e-12)
+
+
+def test_release_plot_does_not_invent_log_floor():
+    source = (ROOT / 'web/distribution_release.js').read_text()
+    assert 'Math.max(1e-10,y)' not in source
+    assert 's.capacity[i]>0' in source
+    assert "key==='Ti3_pct'?'titanium_capacity_umol_g':'oxygen_capacity_umol_g'" in source
+
+
 @pytest.fixture(scope='module')
 def doc():
     return json.loads(TOF.read_text())
