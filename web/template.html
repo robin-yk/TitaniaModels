@@ -79,17 +79,70 @@
   <div id="jrModel" role="tabpanel" aria-labelledby="jrModelTab" hidden>
   <details class="panel pad" style="margin-top:24px"><summary>Tested transport cases</summary><p>Each row uses the same R600 source and sink. “Completed” means that the calculation reached 600 s of reoxidation. A stopped calculation records its last computed time.</p><div style="overflow:auto" id="jrCases"></div></details>
   <details class="panel pad" style="margin-top:24px" open><summary>Method</summary>
-    <h3>Joint vacancy and polaron states</h3>
-    <p>State a of cell d has energy E, vacancy count v, electron count n, and degeneracy g. Its population is x = C p. The cell partition function gives the state probabilities. Charge enters through 2v − n.</p>
-    \[Z_d=\sum_a g_{da}\exp\left[-\frac{E_{da}+(2v_{da}-n_{da})e\phi_d-v_{da}\mu_V-n_{da}\mu_e}{k_BT}\right],\qquad p_{da}=\frac{g_{da}}{Z_d}\exp\left[-\frac{E_{da}+(2v_{da}-n_{da})e\phi_d-v_{da}\mu_V-n_{da}\mu_e}{k_BT}\right]\]
-    <p>The free energy includes state energies, configurational entropy, and electrostatic energy. In the equations below, populations are particle counts and concentrations are number densities; displayed inventories are converted to µmol g⁻¹. The implementation uses the equivalent inventory-normalised units. The state energies use a surface vacancy offset Δ = −1.2 eV and vacancy–polaron binding B = 0.8 eV. These two values define the tested conditional case.</p>
-    \[\mathcal F=\sum_{d,a}x_{da}E_{da}+k_BT\sum_{d,a}x_{da}\ln\frac{x_{da}}{C_dg_{da}}+\frac12\sum_\ell q_\ell\phi_\ell,\qquad q_\ell=e(2N_{V,\ell}-N_{e,\ell})\]
-    <h3>Transport and electrostatics</h3>
-    <p>The outer atomic planes retain discrete site energies. Spherical shells describe the interior. The electron and surface-state populations relax at each transport step. Poisson's equation determines the potential with relative permittivity 64.</p>
-    \[\frac{\partial c_V}{\partial t}=-\frac1{r^2}\frac{\partial(r^2J_V)}{\partial r},\qquad J_V=-\frac{D(r)c_V}{k_BT}\frac{\partial\mu_V}{\partial r},\qquad-\frac1{r^2}\frac{\partial}{\partial r}\left(r^2\epsilon_0\epsilon_r\frac{\partial\phi}{\partial r}\right)=e(2c_V-c_e)\]
-    \[D(r)=\frac{a_h^2\nu_0}{6}\exp\left[-\frac{E_m(r)}{k_BT}\right],\qquad a_h=0.3\,\mathrm{nm},\quad\nu_0=10^{13}\,\mathrm{s^{-1}}\]
-    <p>The centre has zero flux. At the surface, each removed oxygen adds one vacancy and two electrons during reduction. Each CO molecule removes one vacancy and two electrons during reoxidation. The measured rate curves supply these boundary amounts. Reduction lasts 1800 s; reoxidation lasts 600 s.</p>
-    <p>A finite-volume Scharfetter–Gummel flux and backward Euler time step solve transport. The displayed case uses 320 interior cells, maximum reduction step 2.5 s, and maximum reoxidation step 0.05 s. The graphs show saved checkpoints.</p>
+    <h3>Particle geometry and site counts</h3>
+    <p>The calculation uses a spherical rutile particle with radius R = 450 nm at T = 873.15 K. Depth z is measured from the surface. Four explicit (110) trilayers describe the outer 1.30 nm; 320 spherical cells describe the interior. The (110) area fraction is 0.75. Site capacities count each oxygen and titanium site once.</p>
+    \[z=R-r,\qquad N_{\mathrm O}^{\mathrm{tot}}=\frac{2N_A}{M},\qquad N_{\mathrm{Ti}}^{\mathrm{tot}}=\frac{N_A}{M}\]
+    \[A_{\mathrm{sp}}=\frac{3}{\rho R},\qquad A_{110}=\sqrt{2}\,a_{\mathrm{lat}}c_{\mathrm{lat}},\qquad C_{\mathrm{BRI}}(z)=\frac{0.75A_{\mathrm{sp}}}{A_{110}}\left(1-\frac zR\right)^2\]
+    <p>These equations give sites per gram when lengths use consistent units. M = 79.866 g mol⁻¹, ρ = 4.2487 g cm⁻³, a<sub>lat</sub> = 0.4594 nm and c<sub>lat</sub> = 0.2958 nm. Each trilayer has one bridging oxygen, two in-plane oxygens, one sub-bridging oxygen and two titanium sites per surface cell. Interior capacities are assigned by shell volume after subtraction of the explicit sites.</p>
+    \[f_{\mathrm{shell}}=\left(1-\frac{z_{\mathrm{lo}}}{R}\right)^3-\left(1-\frac{z_{\mathrm{hi}}}{R}\right)^3\]
+    <h3>Local states and their energies</h3>
+    <p>A joint cell contains one bridging oxygen site and two Ti sites in the second trilayer. State a has v vacancies, n excess electrons, energy E and multiplicity g. An excess electron represents a Ti³⁺ polaron. The vacancy and electrons occupy different planes, so they receive different electrostatic potentials.</p>
+    <div style="overflow:auto"><table><thead><tr><th>v</th><th>n</th><th>E (eV)</th><th>g</th></tr></thead><tbody>
+      <tr><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+      <tr><td>0</td><td>1</td><td>ε<sub>e</sub></td><td>2</td></tr>
+      <tr><td>0</td><td>2</td><td>2ε<sub>e</sub></td><td>1</td></tr>
+      <tr><td>1</td><td>0</td><td>Δ + B − 2ε<sub>e</sub></td><td>1</td></tr>
+      <tr><td>1</td><td>1</td><td>Δ + B/2 − ε<sub>e</sub></td><td>2</td></tr>
+      <tr><td>1</td><td>2</td><td>Δ</td><td>1</td></tr>
+      <tr><td>1</td><td>2</td><td>Δ + 0.28</td><td>1</td></tr>
+      <tr><td>1</td><td>2</td><td>Δ + 0.23</td><td>1</td></tr>
+    </tbody></table></div>
+    <p>The displayed case uses Δ = −1.2 eV, B = 0.8 eV and ε<sub>e</sub> = 0. The last three rows represent three neutral vacancy–polaron arrangements. The gaps use the PBE state set in the archived code. The multiplicity 2 counts equivalent electron positions. This eight-state construction, Δ and B are model assumptions.</p>
+    \[C_{\mathrm{joint}}=\min\left(C_{\mathrm{BRI}},\frac{C_{\mathrm{Ti},2}}{2}\right)\]
+    <p>Unused bridging sites have binary occupancy with energy Δ + B. Other oxygen sites and free Ti sites have binary occupancy with zero reference energy. The interior uses ideal binary states for vacancies and electrons.</p>
+    <h3>State probabilities and chemical potentials</h3>
+    <p>The vacancy chemical potential μ<sub>V,i</sub> varies between transport cells. The electron chemical potential μ<sub>e</sub> is common to the particle. At each time step, electrons and local state populations relax at the current vacancy distribution.</p>
+    \[h_{da}=E_{da}+2v_{da}e\phi_{V,d}-n_{da}e\phi_{e,d}-v_{da}\mu_{V,i(d)}-n_{da}\mu_e\]
+    \[w_{da}=g_{da}\exp\left(-\frac{h_{da}}{k_BT}\right),\qquad Z_d=\sum_a w_{da},\qquad p_{da}=\frac{w_{da}}{Z_d},\qquad x_{da}=C_dp_{da}\]
+    <p>x is the state population and C is the number of cells. φ<sub>V,d</sub> is the potential at the oxygen plane; φ<sub>e,d</sub> is the potential at the Ti plane. For a single binary site, the same expression gives the occupancy relation below.</p>
+    \[\ln\frac{\theta_V}{1-\theta_V}=-\frac{E_V+2e\phi-\mu_V}{k_BT},\qquad \ln\frac{\theta_e}{1-\theta_e}=-\frac{E_e-e\phi-\mu_e}{k_BT}\]
+    \[N_V=\sum_{d,a}v_{da}x_{da},\qquad N_e=\sum_{d,a}n_{da}x_{da}=2N_V\]
+    <h3>Free energy and electrostatic potential</h3>
+    <p>The free energy contains local state energies, configurational entropy and electrostatic energy. In these equations, N and x are particle counts per gram and q is charge per gram. The implementation converts these quantities to µmol g⁻¹ and uses eV for energies.</p>
+    \[\mathcal F=\sum_{d,a}x_{da}E_{da}+k_BT\sum_{d,a}x_{da}\ln\frac{x_{da}}{C_dg_{da}}+\frac12\sum_i q_i\phi_i,\qquad q_i=e(2N_{V,i}-N_{e,i})\]
+    <p>Each vacancy contributes +2e and each electron contributes −e. Spherical Poisson electrostatics gives the potential. The relative permittivity is 64.</p>
+    \[-\frac1{r^2}\frac{\partial}{\partial r}\left(r^2\epsilon_0\epsilon_r\frac{\partial\phi}{\partial r}\right)=e(2c_V-c_e),\qquad \epsilon_r=64\]
+    <p>c denotes number density. The shell calculation sums the potentials of charged spherical shells. This also fixes the zero of potential at infinity. The total particle charge is zero.</p>
+    \[\phi_i=\frac{1}{4\pi\epsilon_0\epsilon_r}\sum_j\frac{Q_j}{\max(r_i,r_j)},\qquad \sum_jQ_j=0\]
+    <p>Q is the charge of a shell in one particle. The solver uses the equivalent tridiagonal inverse of this shell-potential matrix. State probabilities and potential are solved together.</p>
+    <h3>Depth-dependent vacancy mobility</h3>
+    <p>The outer 30 nm uses an effective migration barrier of 1.6 eV. The interior uses 2.2 eV. The same mobility applies during reduction and reoxidation. These barriers define the displayed tested case.</p>
+    \[E_m(z)=\begin{cases}1.6\,\mathrm{eV},&0\le z<30\,\mathrm{nm}\\2.2\,\mathrm{eV},&z\ge30\,\mathrm{nm}\end{cases}\]
+    \[D(z)=\frac{a_h^2\nu_0}{6}\exp\left[-\frac{E_m(z)}{k_BT}\right],\qquad a_h=0.3\,\mathrm{nm},\quad\nu_0=10^{13}\,\mathrm{s^{-1}}\]
+    <p>A face that crosses 30 nm uses the diffusion resistance of both parts of the interval. ℓ<sub>o</sub> is the length within the outer region.</p>
+    \[D_{i+1/2}=\frac{\Delta z_i}{\ell_o/D_o+(\Delta z_i-\ell_o)/D_b}\]
+    <h3>Vacancy flux between cells</h3>
+    <p>Cells are numbered from surface to centre. J<sub>i</sub> is the vacancy amount per unit time moving inward from cell i to cell i + 1. The finite-volume flux includes occupied and empty sites on both sides of the face.</p>
+    \[\theta_i=\frac{N_{V,i}}{C_{\mathrm O,i}},\qquad \alpha_i=\frac{\mu_{V,i}}{k_BT},\qquad \eta_i=\alpha_i-\ln\frac{\theta_i}{1-\theta_i},\qquad \delta_i=\eta_{i+1}-\eta_i\]
+    \[b(\delta)=\frac{\delta}{\exp(\delta)-1},\qquad b(0)=1\]
+    \[J_i=G_i\left[b(\delta_i)\theta_i(1-\theta_{i+1})-b(-\delta_i)\theta_{i+1}(1-\theta_i)\right]\]
+    \[G_i=\frac{D_{i+1/2}\rho_{\mathrm O}\,4\pi r_{i+1/2}^2}{\Delta z_i}\]
+    <p>ρ<sub>O</sub> is the oxygen-site inventory per particle volume. The first twelve face conductances also receive the (110) area factor 0.75. With this sign convention, diffusion follows decreasing vacancy chemical potential.</p>
+    \[\mathcal D=k_BT\sum_iJ_i(\alpha_i-\alpha_{i+1})\ge0\]
+    <h3>Initial condition and measured surface exchange</h3>
+    <p>Reduction starts with zero vacancies and zero excess electrons. The measured oxygen-removal rate sets the surface input. Reoxidation starts from the final reduction state. The measured CO-formation rate sets oxygen incorporation: one CO molecule fills one vacancy and removes two excess electrons.</p>
+    \[N_V(0)=N_e(0)=0,\qquad N_V^{\mathrm{red}}(t)=\int_0^t s_{\mathrm{red}}(\tau)\,d\tau,\qquad N_e(t)=2N_V(t)\]
+    \[N_V^{\mathrm{ox}}(t)=N_V^{\mathrm{red}}(1800\,\mathrm{s})-Q_{\mathrm{CO}}(t),\qquad J_{\mathrm{surface}}^{\mathrm{ox}}=-\frac{dQ_{\mathrm{CO}}}{dt}\]
+    <p>The reduction rate is piecewise linear; its integral uses the trapezoidal rule. For reoxidation, the code integrates the measured rates at the input times and applies a running maximum to the cumulative curve. Linear interpolation of that cumulative curve supplies a non-negative oxygen-incorporation rate between input times. Endpoint rates are extended to the stage boundaries. The curves retain their measured scale.</p>
+    \[Q_k^{\mathrm{raw}}=\sum_{j<k}\frac{s_j+s_{j+1}}2(t_{j+1}-t_j),\qquad Q_k=\max_{m\le k}Q_m^{\mathrm{raw}}\]
+    <p>The centre has zero vacancy flux. Reduction lasts 1800 s and reoxidation lasts 600 s. The calculation predicts the internal distribution under these measured boundary amounts.</p>
+    <h3>Time steps and coupled numerical solution</h3>
+    <p>Backward Euler updates each cell inventory. J<sub>−1</sub> denotes surface input; J<sub>L−1</sub> = 0 denotes centre flux.</p>
+    \[N_{V,i}^{k+1}-N_{V,i}^{k}=\Delta t\left(J_{i-1}^{k+1}-J_i^{k+1}\right)\]
+    <p>The unknown vector contains one vacancy chemical potential per cell, one electron chemical potential and one potential per electrostatic shell. Newton iteration solves local vacancy balance, total electron balance and Poisson electrostatics together.</p>
+    \[\mathbf y=(\alpha_0,\ldots,\alpha_{L-1},\mu_e/k_BT,e\phi_0/k_BT,\ldots),\qquad \mathbf H(\mathbf y)\Delta\mathbf y=-\mathbf R(\mathbf y)\]
+    \[\mathbf y_{\mathrm{new}}=\mathbf y+\lambda\Delta\mathbf y,\qquad 0<\lambda\le1\]
+    <p>R is the coupled residual vector and H is its analytic Jacobian. Row scaling and a line search control the Newton step. A failed time step is retried at half its duration. The maximum step is 2.5 s during reduction and 0.05 s during reoxidation. Near-empty cells use the archived least-norm treatment of the null tail. The validation checks test local inventory balance, total vacancy and electron counts, Poisson consistency and non-negative transport dissipation. Figures show saved time checkpoints.</p>
   </details>
   <details class="panel pad" style="margin-top:24px"><summary>Validation</summary><div id="jrValidation"></div><p>The integrated reduction source gives 95.719 µmol O g⁻¹. The measured R600 inventory is 94 µmol O g⁻¹. The endpoint difference is 1.83%. After 600 s of reoxidation, 14.194 µmol O g⁻¹ of vacancies remain and 81.525 µmol O g⁻¹ of vacancies have been filled. Both histories use the same depth-dependent mobility.</p><p>The source snapshot, input rates, raw results, and checks are stored in <code>pilot/joint_state_release</code>. The previous equilibrium distribution calculations remain in the source history and data archive.</p></details>
   </div>
