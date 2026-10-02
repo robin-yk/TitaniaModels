@@ -3,7 +3,6 @@ import re
 from latex2mathml.converter import convert
 
 EQUATIONS = [
- [r'\mathrm{TOF}=\frac{r_{\mathrm{CO}}}{N_{\mathrm{react}}}'],
  [r'\mathrm{CO_2}+\mathrm{H_2}\rightleftharpoons\mathrm{CO}+\mathrm{H_2O}'],
  [r'G=\sum_{i\in\mathrm{gas}}n_i\mu_i+\sum_{j\in\mathrm{solid}}m_j\mu_j^\circ(T)',r'\mu_i=\mu_i^\circ(T)+RT\ln\left(\frac{y_iP}{P^\circ}\right)'],
  [r'\mu_i=\sum_e a_{ie}\lambda_e\quad(i\in\mathrm{gas})',r'\mu_j^\circ=t_j\lambda_{\mathrm{Ti}}+o_j\lambda_{\mathrm O}\quad(j\in\mathrm{active\ solids})'],

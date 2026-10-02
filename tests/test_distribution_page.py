@@ -17,6 +17,32 @@ PILOT = ROOT / 'pilot' / 'titania-super-multiscale' / 'outputs'
 PAGE = ROOT / 'docs' / 'index.html'
 
 
+def test_latest_release_data_is_embedded_without_changes():
+    import re
+    html = PAGE.read_text()
+    match = re.search(r'<script id="joint-state-data" type="application/json">(.*?)</script>', html, re.S)
+    assert match
+    stored = json.loads((ROOT / 'pilot/joint_state_release/page_data.json').read_text())
+    assert json.loads(match.group(1)) == stored
+    assert stored['diameter_nm'] == 900
+    assert stored['temperature_K'] == 873.15
+    for panel in ['jrA', 'jrB', 'jrC', 'jrD']:
+        assert f'id="{panel}"' in html
+    assert 'window.TimeDependentDistribution' in html
+    assert 'window.VacancyDistribution=' not in html
+
+
+def test_latest_release_reoxidation_fills_vacancies():
+    data = json.loads((ROOT / 'pilot/joint_state_release/page_data.json').read_text())
+    ox = data['reoxidation']
+    assert ox[0]['vacancy_total_umol_g'] == data['reduction'][-1]['vacancy_total_umol_g']
+    assert all(b['vacancy_total_umol_g'] <= a['vacancy_total_umol_g'] + 1e-9 for a, b in zip(ox, ox[1:]))
+    assert abs(ox[-1]['vacancy_total_umol_g'] - 14.19409) < 1e-4
+    html = PAGE.read_text()
+    assert 'oxygen incorporated into the solid' in html
+    assert 'cumulative oxygen removal as CO' not in html
+
+
 @pytest.fixture(scope='module')
 def doc():
     return json.loads(TOF.read_text())

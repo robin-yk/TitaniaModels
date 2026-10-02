@@ -32,9 +32,18 @@ reduction boundary and repeats a ratio sweep with the finite oxide charge.  The
 two calculations are kept separate so gas reaction equilibrium is not confused
 with oxygen supplied by the solid.
 
-### Pilot: vacancy distribution and apparent TOF
+### Pilot: time-dependent vacancy distribution
 
-The manuscript does not use this model. Its Supplementary Note 2a divides every
+The distribution tab shows the R600 reduction and reoxidation calculation in
+`pilot/joint_state_release/`. It follows vacancies and Ti³⁺ from the surface
+to the centre of a 900 nm particle at 600 °C. The calculation starts from a
+defect-free particle, uses the measured reduction history, and then follows
+600 s of reoxidation. The selected mobility case uses assumed barriers of
+1.6 eV in the outer 30 nm and 2.2 eV below that region. The page labels these
+inputs and displays stored results. Source code, full results, and provenance
+are included in the release folder.
+
+The manuscript does not use this pilot. Its Supplementary Note 2a divides every
 sample's initial CO rate by one fixed reactive-site count, 2.31 umol/g, and its
 Note 2b profile comes from a continuum model with local electroneutrality that
 is no longer in this repository. The pilot model in
@@ -51,7 +60,7 @@ over the countable cases (at least 0.01 umol/g and 1% of the bridging
 capacity) is the apparent TOF range; the other cases are kept and reported
 apart. The run takes about 40 minutes on four cores.
 `scripts/export_tof_range.py` packs it into `paper_outputs/tof_range.json`,
-and the page displays that file without recomputing it.
+and the historical export remains available for reproduction.
 
 ### Vacancy population model
 
@@ -95,9 +104,9 @@ from the coefficient tables.
 The page loads manuscript reference values from committed JSON and keeps them
 separate from calculations using user inputs.
 
-The TOF range has no browser engine. Gates hold `paper_outputs/tof_range.json`
-to the pilot outputs byte for byte and the page to that JSON, and the browser
-check reads each printed TOF back against the stored site count.
+The historical TOF range has no browser engine. Gates hold
+`paper_outputs/tof_range.json` to the pilot outputs byte for byte.
+The current distribution tab reads the joint-state release data.
 
 `scripts/check_page.py` loads the built page in a browser and compares its
 displayed numbers with fresh calculations.
@@ -116,7 +125,7 @@ data/           thermodynamic tables, the reduction series, the 80-digit referen
 paper_outputs/  every computed number in the manuscript, as committed CSV
 web/            the browser mirrors, a drawing kit, figure modules, one page
 docs/           the built page and the method notes
-pilot/          titania-super-multiscale, the site-distribution model behind the TOF range
+pilot/          joint_state_release; historical titania-super-multiscale TOF model
 ```
 
 See [docs/equilibrium-method.md](docs/equilibrium-method.md) and

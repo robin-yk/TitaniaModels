@@ -134,7 +134,7 @@ def test_the_browser_engines_are_mirrors_under_a_parity_gate():
             '%s has no parity gate; %s must exist' % (js, gate)
     inlined = sorted(p.name for p in (ROOT / 'web').iterdir()
                      if p.suffix == '.js')
-    assert inlined == ['activeset.js', 'distribution_ui.js', 'figkit.js',
+    assert inlined == ['activeset.js', 'distribution_release.js', 'distribution_ui.js', 'figkit.js',
                        'figures_distribution.js', 'figures_population.js',
                        'figures_thermo.js', 'population.js', 'site_ui.js',
                        'slab_canvas.js', 'thermo_ui.js', 'ti_solver_page.js'], inlined

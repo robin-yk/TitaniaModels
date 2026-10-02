@@ -35,7 +35,7 @@
   }
   organize('ws-thermo', 'p-res', 'p-how', ['p-kkt','p-bal','p-val']);
   organize('ws-population', 'pp-res', 'pp-how', ['pp-val']);
-  organize('ws-distribution', 'vd-res', 'vd-how', ['vd-val']);
+  if ($('vd-res')) organize('ws-distribution', 'vd-res', 'vd-how', ['vd-val']);
   var D = JSON.parse($('activeset-data').textContent);
   var REF = JSON.parse($('reference-data').textContent);
   var solver = new ActiveSet.Solver(D);

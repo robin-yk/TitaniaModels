@@ -57,265 +57,33 @@
 </section>
 
 <section id="ws-distribution" class="ws" style="display:none">
-  <div class="wshead"><h2>Vacancy distribution</h2><p class="sub">Calculate the equilibrium distribution of a measured oxygen-vacancy concentration among surface, subsurface and bulk sites in rutile at 600&nbsp;&deg;C. Use the calculated reactive-site concentration to estimate the apparent CO turnover frequency (TOF).</p></div>
-  <div class="vd-hero">
-    <figure class="vd-panel" id="vdParticle">
-      <div class="vd-stage" id="vdParticleStage">
-        <img id="vdParticleImg" src="RENDER:particle_default.webp" alt="Rounded rutile grains; one grain cut open to show the surface band, subsurface band and bulk">
-        <div class="vd-ring" aria-hidden="true"></div>
-        <div class="vd-tip" id="vdTip" hidden></div>
-      </div>
-      <figcaption><b>Rutile particle cross-section.</b> Particle shapes approximate the TEM image (Fig. S10d).
-      Blue: surface sites; orange: subsurface sites; purple: bulk below the four (110)
-      trilayers (1.30&nbsp;nm). Layer thicknesses are exaggerated for visibility.
-      Hover or tap a region to see its calculated vacancy concentration.</figcaption>
-    </figure>
-    <svg class="vd-zoom" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="34" y1="36" x2="52" y2="0"/><line x1="34" y1="44" x2="52" y2="100"/></svg>
-    <figure class="vd-panel" id="vdSurface">
-      <div class="vd-stage vd-frame" id="vdSlabStage">
-        <canvas id="vdSlabCanvas" role="img" aria-label="Rutile (110) surface, four trilayers, with the vacant oxygen sites of the selected case ringed"></canvas>
-        <button type="button" class="vd-play" id="vdSlabPause" aria-pressed="false">Pause</button>
-      </div>
-      <figcaption id="vdSlabCaption"></figcaption>
-    </figure>
+  <div class="wshead"><h2>Vacancy distribution</h2><p class="sub">R600 during H₂ reduction and CO₂ reoxidation at 600 °C. The calculation follows oxygen vacancies and Ti³⁺ from the surface to the centre of a 900 nm rutile particle.</p></div>
+  <p>The measured gas-release rates set the surface source and sink. The depth-dependent transport barriers are assumed: 1.6 eV in the outer 30 nm and 2.2 eV inside. The calculation starts with no defects.</p>
+  <div class="panel pad">
+    <label>Reduction profile <select id="jrReduction"></select></label>
+    <label style="margin-left:24px">Reoxidation profile <select id="jrReoxidation"></select></label>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px;margin-top:24px">
+      <figure style="margin:0"><div id="jrA"></div><button type="button" data-jr-download="jrA">Download figure</button><figcaption>Vacancies accumulated during reduction. The point at 1800 s is the measured R600 inventory, 94 µmol O g⁻¹.</figcaption></figure>
+      <figure style="margin:0"><div id="jrB"></div><button type="button" data-jr-download="jrB">Download figure</button><figcaption>Vacancy fraction of oxygen sites at each depth. The selected reduction and reoxidation times are shown.</figcaption></figure>
+      <figure style="margin:0"><div id="jrC"></div><button type="button" data-jr-download="jrC">Download figure</button><figcaption>Ti³⁺ fraction of titanium sites at the same times. The joint state model couples the vacancy and electron populations.</figcaption></figure>
+      <figure style="margin:0"><div id="jrD"></div><button type="button" data-jr-download="jrD">Download figure</button><figcaption>Remaining vacancies and oxygen incorporated into the solid during reoxidation. Each CO molecule formed fills one oxygen vacancy.</figcaption></figure>
+    </div>
   </div>
-  <div class="wsgrid">
-    <aside class="population-sheet" aria-labelledby="vd-controls-title">
-      <header class="population-sheet-head">
-        <h3 id="vd-controls-title">Model parameters</h3>
-        <p>Select one of 720 calculated parameter combinations.</p>
-      </header>
-      <div class="population-parameters">
-        <div class="population-field"><label for="vdScenario">Vacancy distribution scenario</label><select id="vdScenario"></select>
-          <div class="readout">S1–S5 run from highest to lowest total surface vacancy concentration across all six samples. Parameters and sources are listed under Method.</div></div>
-        <div class="population-field"><label for="vdSample">Sample</label><select id="vdSample"></select>
-          <div class="readout" id="vdSampleNote"></div></div>
-        <div class="population-field"><label for="vdMap">Vacancy segregation energies</label><select id="vdMap"></select>
-          <div class="readout">E<sub>f,site</sub> − E<sub>f,bulk</sub>. Negative values favour that site over bulk.</div></div>
-        <div class="population-field"><label for="vdCutoff">Vacancy–vacancy interaction cutoff</label><select id="vdCutoff"></select>
-          <div class="readout">Bulk vacancy pairs interact up to this distance, using the pair energy of Zhao et al. (2017).</div></div>
-        <div class="population-field"><label for="vdDG">(1&times;2) reconstruction free energy &Delta;G</label><select id="vdDG"></select>
-          <div class="readout">eV per (1&times;2) cell, relative to a cell with one bridging-oxygen vacancy.</div></div>
-        <div class="population-field"><label for="vdF110">(110) area fraction</label><select id="vdF110"></select>
-          <div class="readout">Fraction of the particle surface assigned to (110) facets. Reactive sites are counted on these facets.</div></div>
-        <div class="population-field"><label for="vdEps">Static dielectric constant &epsilon;</label><select id="vdEps"></select>
-          <div class="readout">Rutile at 873&nbsp;K, a or c axis (Parker 1961).</div></div>
-        <div class="population-field"><label for="vdReactive">Reactive-site definition</label><select id="vdReactive"></select>
-          <div class="readout" id="vdReactiveNote"></div></div>
-      </div>
-      <div class="population-sheet-foot">
-        <div class="population-status" id="vdStatus" aria-live="polite"></div>
-        <div class="population-actions">
-          <button type="button" class="population-reset" id="vdReset">Reset parameters</button>
-          <button type="button" class="population-fit" id="vdPlay">Step through samples</button>
-        </div>
-      </div>
-    </aside>
-<div class="wsmain">
-<div class="kvrow">
-  <div class="kvblock">
-    <h3>Oxygen-vacancy concentration by region</h3>
-    <table class="kv" id="vdBasis"></table>
-  </div>
-  <div class="kvblock">
-    <h3>Site concentration and apparent CO TOF</h3>
-    <div id="vdVerdict"></div>
-    <table class="kv" id="vdKpis"></table>
-  </div>
-</div>
-
-<div class="figgrid">
-  <figure class="pubfig wide" id="figTofRange">
-    <h3>Apparent CO TOF by sample</h3>
-    <div class="figbox" role="img" aria-label="Apparent CO turnover frequency for six samples under five vacancy-distribution scenarios, S1 to S5"></div>
-    <div class="vd-figure-actions"><details class="figdl"><summary>Download figure</summary>
-      <button type="button" data-fmt="svg">SVG</button>
-      <button type="button" data-fmt="png">PNG, 600 dpi</button>
-      <button type="button" data-fmt="csv">CSV data</button>
-    </details><button type="button" id="vdTableToggle" aria-expanded="false" aria-controls="vdTablePanel">Show table</button></div>
-    <figcaption>TOF = r<sub>CO</sub>/N<sub>react</sub>; r<sub>CO</sub> measured at
-    600&nbsp;&deg;C. Each sample has five points, ordered S1–S5 from left to right.
-    S1–S5 are ordered by decreasing total surface vacancy concentration,
-    including bridging, reconstructed-row and layer-1 in-plane vacancies.
-    All five use a (110) area fraction of 0.75,
-    &epsilon; = 64 and unreconstructed bridging-oxygen vacancies as reactive sites.
-    These five scenarios remain fixed when the controls above change.
-    Open symbols mark N<sub>react</sub> below 0.01&nbsp;&micro;mol&nbsp;g&#8315;&sup1;
-    or below 1% of bridging-O sites.</figcaption>
-  </figure>
-</div>
-
-<div class="panel pad" id="vdTablePanel" hidden>
-  <h2>Apparent CO TOF by sample</h2>
-  <div class="tablewrap"><table class="vdt">
-    <thead><tr><th>Sample</th><th>Treatment T (&deg;C)</th><th class="n">Inventory, measured (µmol O g⁻¹)</th><th class="n">r<sub>CO</sub>, measured (µmol g⁻¹ s⁻¹)</th>
-      <th class="n">S1 TOF (s⁻¹)</th><th class="n">S2 TOF (s⁻¹)</th><th class="n">S3 TOF (s⁻¹)</th><th class="n">S4 TOF (s⁻¹)</th><th class="n">S5 TOF (s⁻¹)</th></tr></thead>
-    <tbody id="vdTable"></tbody>
-  </table></div>
-  <p class="sub">The five scenarios shown in the figure. * N<sub>react</sub> below the site-concentration threshold.</p>
-</div>
-
-<div class="figgrid">
-  <figure class="pubfig wide" id="figVacancyProfile">
-    <h3>Vacancy depth profile <span id="vdProfileSample"></span></h3>
-    <div class="figbox" role="img" aria-label="Depth-resolved oxygen vacancy fractions for five scenarios"></div>
-    <details class="figdl"><summary>Download figure</summary>
-      <button type="button" data-fmt="svg">SVG</button>
-      <button type="button" data-fmt="png">PNG, 600 dpi</button>
-      <button type="button" data-fmt="csv">CSV data</button>
-    </details>
-    <figcaption>Vacant oxygen sites (%) at each depth for a 900&nbsp;nm particle at 600&nbsp;°C. Left: the outer four trilayers, with points at individual oxygen planes. Right: 240 shells extending to the particle centre, on a logarithmic depth axis. Lines join calculated positions. S1–S5 use the TOF scenarios; the TOF figure averages four particle sizes.</figcaption>
-  </figure>
-</div>
-<div class="tabs">
-  <button class="tab active" data-page="vd-how" type="button">Method</button>
-  <button class="tab" data-page="vd-val" type="button">Validation</button>
-</div>
-<div class="page active" id="vd-res"></div>
-<div class="panel pad page active" id="vd-how">
-  <h2>Method</h2>
-  <p>The measured oxygen removal sets the total vacancy concentration in each sample.
-  The model distributes these vacancies and their associated electrons among rutile sites
-  by minimising the free energy at 873.15&nbsp;K (600&nbsp;&deg;C). The total vacancy
-  concentration remains fixed. Calculations cover 720 parameter combinations and five
-  definitions of a reactive site.</p>
-  <h3>Site capacities</h3>
-  <p>Particles are represented as smooth spheres of diameter D, with density
-  &rho; = 4.2487&nbsp;g&nbsp;cm⁻³ and molar mass M = 79.866&nbsp;g&nbsp;mol⁻¹.
-  Site capacities are expressed in µmol per gram of initial TiO<sub>2</sub>.</p>
-  \[A_m=\frac{6}{\rho D},\qquad A_{110}=\sqrt{2}\,ac,\qquad c_{\mathrm{BRI}}=\frac{A_m}{A_{110}N_{\mathrm A}};;C_{k,i}=f_{110}\,m_i\,c_{\mathrm{BRI}}\left(1-\frac{z_{k,i}}{R}\right)^2,\qquad m_{\mathrm{BRI}}=1,\;m_{\mathrm{IPL}}=2,\;m_{\mathrm{SBR}}=1,\;m_{\mathrm{Ti}}=2;;C_{\mathrm{O,tot}}=\frac{2\times10^6}{M},\qquad C_{\mathrm{Ti,tot}}=\frac{10^6}{M}\]
-  <p>k = 1&ndash;4 is the trilayer, z<sub>k,i</sub> the depth of site i (a = 0.4594&nbsp;nm,
-  c = 0.2958&nbsp;nm, O parameter u = 0.30479). O and Ti below the trilayers are the
-  remainder of C<sub>O,tot</sub> and C<sub>Ti,tot</sub>, split over 240 bulk shells by volume.
-  Each site is counted once.</p>
-
-  <h3>State table and free energy</h3>
-  <p>Each group of equivalent cells, d, has a concentration C<sub>d</sub> (µmol&nbsp;g⁻¹). A cell in state a has energy
-  E<sub>da</sub>, degeneracy g<sub>da</sub>, v<sub>da</sub> O vacancies and e<sub>da</sub> Ti<sup>3+</sup>.
-  Populations x<sub>da</sub> = C<sub>d</sub>p<sub>da</sub> minimise</p>
-  \[\mathcal F=\sum_{d,a}x_{da}E_{da}+k_{\mathrm B}T\sum_{d,a}x_{da}\ln\frac{x_{da}}{C_d\,g_{da}}+\frac12\sum_{\ell,m}q_\ell H_{\ell m}q_m\]
-  <p>at T = 873.15&nbsp;K, subject to</p>
-  \[\sum_a x_{da}=C_d,\qquad\sum_{d,a}v_{da}x_{da}=N_{\mathrm V},\qquad\sum_{d,a}e_{da}x_{da}=2N_{\mathrm V}\]
-  <p>N<sub>V</sub>: measured O removal of the sample (µmol O g⁻¹).</p>
-
-  <h3>Vacancy segregation energies</h3>
-  <p>BRI denotes bridging oxygen, IPL in-plane oxygen, and SBR subbridging oxygen.</p>
-  <p>Single-vacancy formation energies are expressed relative to bulk,
-  &epsilon;<sub>k,i</sub> = E<sub>f,k,i</sub> &minus; E<sub>f,bulk</sub>, using one of four
-  energy sets: Pabisiak and Kiejna (2007, GGA; PAB)<sup>1</sup>,
-  Hameeuw et al. (2006, LDA; HAM)<sup>2</sup>, or Li et al. (2015, screened-exchange; LI_SBR1 and LI_L2)<sup>3</sup>.
-  LI_SBR1 assigns the Li subsurface energy to layer-1 subbridging sites; LI_L2 assigns it to all layer-2 oxygen sites.
-  Sites not specified in the selected energy set are assigned the bulk value (&epsilon; = 0).
-  For the Li sets, &epsilon;<sub>1,IPL</sub> = &epsilon;<sub>1,BRI</sub> + 0.11&nbsp;eV
-  <sup>4</sup>. Individual oxygen sites have occupied and vacant states:</p>
-  \[E\in\{0,\;\varepsilon_{k,i}\},\qquad v\in\{0,1\}\]
-
-  <h3>(1&times;2) cell and reconstruction</h3>
-  <p>Each cell contains two bridging oxygen sites and the four Ti sites beneath them
-  in layer 1, giving C<sub>cell</sub> = C<sub>Ti,1</sub>/4. For each oxygen configuration,
-  n electrons can occupy the remaining Ti sites as Ti<sup>3+</sup> polarons, at an energy
-  s<sub>0</sub> = 0.2&nbsp;eV per electron<sup>5</sup>:</p>
-  \[E=E_o+n\,s_0,\qquad g=g_o\binom{n_{\mathrm{free}}}{n},\qquad e=e_o+n;;\begin{array}{lcccc}o&E_o&v&e_o&g_o\ (n_{\mathrm{free}})\\ \mathrm{intact}&0&0&0&1\ (4)\\ \mathrm{one\ vacant}&\varepsilon_{1,\mathrm{BRI}}&1&0&2\ (4)\\ \mathrm{both\ vacant}&2\varepsilon_{1,\mathrm{BRI}}&2&0&1\ (4)\\ \mathrm{reconstructed}&\varepsilon_{1,\mathrm{BRI}}+\Delta G&1&2&1\ (2)\end{array}\]
-  <p>&Delta;G is relative to the one-vacancy state. Reconstructed fraction of bridging sites
-  and vacant fraction of the unreconstructed ones:</p>
-  \[f_{\mathrm{rec}}=\frac{2x_{\mathrm{rec}}}{C_{\mathrm{BRI}}},\qquad\theta=\frac{N_{\mathrm{V,BRI}}}{C_{\mathrm{BRI}}-2x_{\mathrm{rec}}}\]
-
-  <h3>Bulk aggregates</h3>
-  <p>Bulk oxygen sites below 1.30&nbsp;nm are represented by periodic boxes containing
-  700 sites (5&times;5&times;7 cells). Configurations with N vacancies contribute to the
-  partition function Q(N), which gives the free energy E<sub>N</sub>:</p>
-  \[E_N=-k_{\mathrm B}T\ln Q(N),\qquad v_N=N,\qquad 0\le N\le 175;;Q(N)=\sum_{\sigma\in\Omega_N}\exp\!\left(-\frac{1}{k_{\mathrm B}T}\sum_{i<j,\;r_{ij}\le r_c}J(r_{ij})\,\sigma_i\sigma_j\right);;J(r)=\frac{A}{r}-\frac{B}{r^2}-\frac{C}{r^6},\qquad A=0.753,\;B=11.83,\;C=-383.45\]
-  <p>J is the bulk vacancy-pair interaction energy<sup>6</sup> (r in &Aring;, J in eV),
-  and r<sub>c</sub> is the cutoff distance. Cluster interaction energies are calculated
-  as sums of pair energies. &Omega;<sub>N</sub> contains configurations with N vacancies,
-  each associated with two Ti<sup>3+</sup> among its three Ti neighbours, with at most
-  one electron per Ti<sup>7</sup>. Q(N) is calculated by Monte Carlo sampling and Widom
-  insertion over all sites available for vacancy insertion:</p>
-  \[\frac{Q(N+1)}{Q(N)}=\frac{\langle W\rangle_N}{N+1},\qquad W=\sum_{i\ \mathrm{empty}}\exp\!\left(-\frac{h_i}{k_{\mathrm B}T}\right)\]
-  <p>h<sub>i</sub>: pair energy of site i with the present vacancies. Boxes do not interact.</p>
-
-  <h3>Charge</h3>
-  <p>State charge z = 2v &minus; e (elementary charges). Each atomic plane is a spherical
-  shell &ell; of radius r<sub>&ell;</sub> with charge q<sub>&ell;</sub>. Shells can carry
-  charge while the total particle charge remains zero.</p>
-  \[q_\ell=\sum_{(d,a)\in\ell}z_{da}x_{da},\qquad\sum_\ell q_\ell=0;;\phi_\ell=\sum_m H_{\ell m}q_m,\qquad H_{\ell m}=\frac{\kappa}{\varepsilon_r\max(r_\ell,r_m)}\,m_pN_{\mathrm A}10^{-6},\qquad\kappa=1.43996\ \mathrm{eV\,nm}\]
-  <p>&epsilon;<sub>r</sub> = 64 (a axis) or 107 (c axis), rutile at 873&nbsp;K<sup>8</sup>.
-  m<sub>p</sub>: particle mass (g).</p>
-
-  <h3>Equilibrium populations</h3>
-  <p>The equilibrium state probabilities have the Gibbs form, with multipliers &mu;<sub>V</sub> (vacancy), &mu;<sub>e</sub>
-  (electron) and the shell potentials &phi;<sub>&ell;</sub>:</p>
-  \[p_{da}=\frac{g_{da}}{Z_d}\exp\!\left[-\frac{E_{da}+z_{da}\phi_{\ell(d)}-\mu_{\mathrm V}v_{da}-\mu_e e_{da}}{k_{\mathrm B}T}\right],\qquad Z_d=\sum_a(\cdots)\]
-  <p>The multipliers minimise the convex dual (&beta; = 1/k<sub>B</sub>T, u = &beta;&phi;,
-  f<sub>da</sub> = (v, e, &minus;z)):</p>
-  \[\Psi(\mathbf y)=\sum_d C_d\ln Z_d(\mathbf y)-\mathbf b^{\mathsf T}\mathbf y+\frac12\mathbf u^{\mathsf T}(\beta\mathbf H)^{-1}\mathbf u;;\nabla^2\Psi=\sum_d C_d\left[\langle\mathbf f\mathbf f^{\mathsf T}\rangle_d-\langle\mathbf f\rangle_d\langle\mathbf f\rangle_d^{\mathsf T}\right]+\mathrm{blkdiag}\!\left(0,\,(\beta\mathbf H)^{-1}\right)\]
-  <p>by damped Newton steps. (&beta;H)<sup>&minus;1</sup> is tridiagonal (nested spherical
-  capacitors), so a step costs O(shells). The start is the solution with every trilayer and
-  bulk shell neutral, the &epsilon;<sub>r</sub>&nbsp;&rarr;&nbsp;0 limit.</p>
-
-  <h3>Particle size</h3>
-  <p>Equal-mass mixture over D = 900, 1133, 1367, 1600&nbsp;nm, each at the same N<sub>V</sub>
-  per gram:</p>
-  \[N_{\mathrm{react}}=\frac14\sum_{k=1}^{4}N_{\mathrm{react}}(D_k)\]
-
-  <h3>Parameter grid</h3>
-  <table class="kv" id="vdGrid"></table>
-  <h3>Five vacancy distribution scenarios</h3>
-  <p>The ordering follows the calculated total surface vacancy concentration in all six samples.</p>
-  <div class="tablewrap"><table class="vdt">
-    <thead><tr><th>Scenario</th><th>Segregation energies</th><th>Interaction cutoff (nm)</th><th>Reconstruction cost (eV per cell)</th></tr></thead>
-    <tbody>
-      <tr><td>S1: Highest surface enrichment</td><td>Li et al.<sup>3</sup>, subsurface energy assigned to SBR layer 1</td><td>0.28</td><td>0</td></tr>
-      <tr><td>S2: Higher reconstruction cost</td><td>Same as S1</td><td>0.28</td><td>+0.4</td></tr>
-      <tr><td>S3: Intermediate surface enrichment</td><td>Hameeuw et al.<sup>2</sup></td><td>0.28</td><td>0</td></tr>
-      <tr><td>S4: Lower surface enrichment</td><td>Hameeuw et al.<sup>2</sup></td><td>0.34</td><td>0</td></tr>
-      <tr><td>S5: Lowest surface enrichment</td><td>Pabisiak &amp; Kiejna<sup>1</sup></td><td>0.34</td><td>0</td></tr>
-    </tbody>
-  </table></div>
-  <h3>Apparent CO TOF</h3>
-  <div class="eq">TOF = r<sub>CO</sub> / N<sub>react</sub></div>
-  <p>r<sub>CO</sub>: measured initial CO formation rate (µmol g⁻¹ s⁻¹). N<sub>react</sub>:
-  site concentration under the selected definition (µmol g⁻¹), with c = c<sub>BRI</sub>f<sub>110</sub>(1 &minus; f<sub>rec</sub>).
-  θ is the vacancy fraction among unreconstructed bridging-oxygen sites. BRI counts all these vacancies as reactive sites.
-  ISO estimates isolated vacancies assuming independent site occupancy: (1 − θ)<sup>z</sup> is the probability that z neighbouring sites remain occupied.</p>
-  \[N_{\mathrm{react}}=c\,\theta\qquad(\mathrm{BRI});;N_{\mathrm{react}}=c\,\theta(1-\theta)^z,\quad z=2,4,8\qquad(\mathrm{ISO}_z);;N_{\mathrm{react}}=c\,\theta+N_{\mathrm{V,IPL,1}}\qquad(\mathrm{BRI+BASAL})\]
-  <p>Cases with reactive-site concentrations below either threshold are counted separately
-  and shown with open symbols in the five-scenario figure:</p>
-  \[N_{\mathrm{react}}<0.01\ \mu\mathrm{mol\,g^{-1}}\quad\mathrm{or}\quad N_{\mathrm{react}}<0.01\,c_{\mathrm{BRI}}(900\ \mathrm{nm})\,f_{110}\]
-  <p>The figure compares TOFs for S1–S5 using the BRI site definition. The selected
-  parameter point is also compared with R600 at the same parameters:</p>
-  \[Q_{s,m}=\frac{\mathrm{TOF}_{s,m}}{\mathrm{TOF}_{\mathrm{R600},m}}\]
-  <h3>Limits</h3>
-  <p>Equilibrium at 600&nbsp;&deg;C with complete transport; pretreatment kinetics and
-  cooling are not modelled. Samples treated at &ge; 900&nbsp;&deg;C (R1000, R1100) are in the
-  regime where Ti<sub>2</sub>O<sub>3</sub>-(1&times;2) is reported<sup>9</sup>.</p>
-  <h3>References</h3>
-  <ol class="refs">
-    <li>Pabisiak, T. &amp; Kiejna, A. Energetics of oxygen vacancies at rutile TiO<sub>2</sub>(110) surface. <i>Solid State Commun.</i> <b>144</b>, 324&ndash;328 (2007). <a href="https://doi.org/10.1016/j.ssc.2007.08.043">https://doi.org/10.1016/j.ssc.2007.08.043</a></li>
-    <li>Hameeuw, K., Cantele, G., Ninno, D., Trani, F. &amp; Iadonisi, G. Influence of surface and subsurface defects on the behavior of the rutile TiO<sub>2</sub>(110) surface. <i>Phys. Status Solidi A</i> <b>203</b>, 2219&ndash;2222 (2006). <a href="https://doi.org/10.1002/pssa.200566015">https://doi.org/10.1002/pssa.200566015</a></li>
-    <li>Li, H., Guo, Y. &amp; Robertson, J. Calculation of TiO<sub>2</sub> surface and subsurface oxygen vacancy by the screened exchange functional. <i>J. Phys. Chem. C</i> <b>119</b>, 18160&ndash;18166 (2015). <a href="https://doi.org/10.1021/acs.jpcc.5b02430">https://doi.org/10.1021/acs.jpcc.5b02430</a></li>
-    <li>Matsunaga, K. et al. Existence of basal oxygen vacancies on the rutile TiO<sub>2</sub>(110) surface. <i>Phys. Rev. B</i> <b>90</b>, 195303 (2014). <a href="https://doi.org/10.1103/PhysRevB.90.195303">https://doi.org/10.1103/PhysRevB.90.195303</a></li>
-    <li>Reticcioli, M., Setvin, M., Schmid, M., Diebold, U. &amp; Franchini, C. Formation and dynamics of small polarons on the rutile TiO<sub>2</sub>(110) surface. <i>Phys. Rev. B</i> <b>98</b>, 045306 (2018). <a href="https://doi.org/10.1103/PhysRevB.98.045306">https://doi.org/10.1103/PhysRevB.98.045306</a></li>
-    <li>Zhao, L., Magyari-K&ouml;pe, B. &amp; Nishi, Y. Polaronic interactions between oxygen vacancies in rutile TiO<sub>2</sub>. <i>Phys. Rev. B</i> <b>95</b>, 054104 (2017). <a href="https://doi.org/10.1103/PhysRevB.95.054104">https://doi.org/10.1103/PhysRevB.95.054104</a></li>
-    <li>Shibuya, T., Yasuoka, K., Mirbt, S. &amp; Sanyal, B. A systematic study of polarons due to oxygen vacancy formation at the rutile TiO<sub>2</sub>(110) surface by GGA+U and HSE06 methods. <i>J. Phys.: Condens. Matter</i> <b>24</b>, 435504 (2012). <a href="https://doi.org/10.1088/0953-8984/24/43/435504">https://doi.org/10.1088/0953-8984/24/43/435504</a></li>
-    <li>Parker, R. A. Static dielectric constant of rutile (TiO<sub>2</sub>), 1.6&ndash;1060&deg;K. <i>Phys. Rev.</i> <b>124</b>, 1719&ndash;1722 (1961). <a href="https://doi.org/10.1103/PhysRev.124.1719">https://doi.org/10.1103/PhysRev.124.1719</a></li>
-    <li>Yuan, W. et al. Direct in-situ insights into the asymmetric surface reconstruction of rutile TiO<sub>2</sub>(110). <i>Nat. Commun.</i> <b>15</b>, 1616 (2024). <a href="https://doi.org/10.1038/s41467-024-46011-6">https://doi.org/10.1038/s41467-024-46011-6</a></li>
-  </ol>
-</div>
-
-<div class="panel pad page" id="vd-val">
-  <h2>Validation</h2>
-  <p>Model tests (pilot/titania-super-multiscale/tests): each O and Ti site counted once;
-  Monte Carlo box free energy exact for N = 1, 2 and seed-independent at N = 170
-  (0.05&nbsp;eV per vacancy); inventory, charge neutrality and Poisson residuals; analytic
-  gradient and Hessian against finite differences; scalar &mu;, &mu;<sub>e</sub> limit at large
-  &epsilon;, deviation &prop; 1/&epsilon;; Debye&ndash;H&uuml;ckel screening length; reconstruction
-  fraction &rarr; 0 at &Delta;G = 5&nbsp;eV; stored results regenerate.</p>
-  <table class="kv" id="vdChecks"></table>
-</div>
-
-</div>
-  </div>
+  <details class="panel pad" style="margin-top:24px"><summary>Tested transport cases</summary><p>Each row uses the same R600 source and sink. “Completed” means that the calculation reached 600 s of reoxidation. A stopped calculation records its last computed time.</p><div style="overflow:auto" id="jrCases"></div></details>
+  <details class="panel pad" style="margin-top:24px"><summary>Method</summary>
+    <h3>Joint vacancy and polaron states</h3>
+    <p>State a of cell d has energy E, vacancy count v, electron count n, and degeneracy g. Its population is x = C p. The cell partition function gives the state probabilities. Charge enters through 2v − n.</p>
+    \[Z_d=\sum_a g_{da}\exp\left[-\frac{E_{da}+(2v_{da}-n_{da})e\phi_d-v_{da}\mu_V-n_{da}\mu_e}{k_BT}\right],\qquad p_{da}=\frac{g_{da}}{Z_d}\exp\left[-\frac{E_{da}+(2v_{da}-n_{da})e\phi_d-v_{da}\mu_V-n_{da}\mu_e}{k_BT}\right]\]
+    <p>The free energy includes state energies, configurational entropy, and electrostatic energy. In the equations below, populations are particle counts and concentrations are number densities; displayed inventories are converted to µmol g⁻¹. The implementation uses the equivalent inventory-normalised units. The state energies use a surface vacancy offset Δ = −1.2 eV and vacancy–polaron binding B = 0.8 eV. These two values define the tested conditional case.</p>
+    \[\mathcal F=\sum_{d,a}x_{da}E_{da}+k_BT\sum_{d,a}x_{da}\ln\frac{x_{da}}{C_dg_{da}}+\frac12\sum_\ell q_\ell\phi_\ell,\qquad q_\ell=e(2N_{V,\ell}-N_{e,\ell})\]
+    <h3>Transport and electrostatics</h3>
+    <p>The outer atomic planes retain discrete site energies. Spherical shells describe the interior. The electron and surface-state populations relax at each transport step. Poisson's equation determines the potential with relative permittivity 64.</p>
+    \[\frac{\partial c_V}{\partial t}=-\frac1{r^2}\frac{\partial(r^2J_V)}{\partial r},\qquad J_V=-\frac{D(r)c_V}{k_BT}\frac{\partial\mu_V}{\partial r},\qquad-\frac1{r^2}\frac{\partial}{\partial r}\left(r^2\epsilon_0\epsilon_r\frac{\partial\phi}{\partial r}\right)=e(2c_V-c_e)\]
+    \[D(r)=\frac{a_h^2\nu_0}{6}\exp\left[-\frac{E_m(r)}{k_BT}\right],\qquad a_h=0.3\,\mathrm{nm},\quad\nu_0=10^{13}\,\mathrm{s^{-1}}\]
+    <p>The centre has zero flux. At the surface, each removed oxygen adds one vacancy and two electrons during reduction. Each CO molecule removes one vacancy and two electrons during reoxidation. The measured rate curves supply these boundary amounts. Reduction lasts 1800 s; reoxidation lasts 600 s.</p>
+    <p>A finite-volume Scharfetter–Gummel flux and backward Euler time step solve transport. The displayed case uses 320 interior cells, maximum reduction step 2.5 s, and maximum reoxidation step 0.05 s. The graphs show saved checkpoints.</p>
+  </details>
+  <details class="panel pad" style="margin-top:24px"><summary>Validation</summary><div id="jrValidation"></div><p>The integrated reduction source gives 95.719 µmol O g⁻¹. The measured R600 inventory is 94 µmol O g⁻¹. The endpoint difference is 1.83%. After 600 s of reoxidation, 14.194 µmol O g⁻¹ of vacancies remain and 81.525 µmol O g⁻¹ of vacancies have been filled. Both histories use the same depth-dependent mobility.</p><p>The source snapshot, input rates, raw results, and checks are stored in <code>pilot/joint_state_release</code>. The previous equilibrium distribution calculations remain in the source history and data archive.</p></details>
 </section>
 
 <!-- ========================================== gas-solid equilibrium -->
@@ -779,6 +547,5 @@
 <script id="tof-data" type="application/json">/*TOFDATA*/</script>
 <script id="depth-data" type="application/json">/*DEPTHDATA*/</script>
 <script id="render-data" type="application/json">/*RENDERDATA*/</script>
-<script>/*DISTFIG*/</script>
-<script>/*SLAB*/</script>
+<script id="joint-state-data" type="application/json">/*RELEASEDATA*/</script>
 <script>/*DISTUI*/</script>

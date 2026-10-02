@@ -38,7 +38,7 @@ CASES_FEEDS = {
 PARTS = [
     ('/*DISTFIG*/', os.path.join(WEB, 'figures_distribution.js')),
     ('/*SLAB*/', os.path.join(WEB, 'slab_canvas.js')),
-    ('/*DISTUI*/', os.path.join(WEB, 'distribution_ui.js')),
+    ('/*DISTUI*/', os.path.join(WEB, 'distribution_release.js')),
     ('/*CSS*/', os.path.join(WEB, 'site.css')),
     ('/*FIGKIT*/', os.path.join(WEB, 'figkit.js')),
     ('/*ENGINE*/', os.path.join(WEB, 'activeset.js')),
@@ -95,7 +95,7 @@ def inline_renders(html):
         html = html.replace('RENDER:' + name, data_uri(name))
     doc = dict(mask=data_uri('particle_mask.png'),
                particle={k: data_uri('particle_%s.webp' % k)
-                         for k in ('surface', 'subsurface', 'bulk')},
+                         for k in ('default', 'surface', 'subsurface', 'bulk')},
                slab=json.loads(read(os.path.join(RENDER, 'slab_atoms.json'))))
     return html.replace('/*RENDERDATA*/', json.dumps(doc, separators=(',', ':')))
 
@@ -128,6 +128,7 @@ def render():
                         json.dumps(json.loads(read(SITE)),
                                    separators=(',', ':')))
     html = inline_renders(html)
+    html = html.replace('/*RELEASEDATA*/', json.dumps(json.loads(read(os.path.join(ROOT, 'pilot', 'joint_state_release', 'page_data.json'))), separators=(',', ':')))
     html = html.replace('/*DEPTHDATA*/', read(os.path.join(ROOT, 'web', 'depth_profiles.json')))
     html = html.replace('/*TOFDATA*/',
                         json.dumps(json.loads(read(TOF)), separators=(',', ':')))

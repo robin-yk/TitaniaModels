@@ -99,110 +99,21 @@ const P = require(process.env.PW + '/node_modules/playwright');
   out.popKpis = await txt('pnKpis');
   out.popFit = await txt('pnIdent');
 
-  /* the distribution workspace: the TOF figure, the rendered panels, and the
-     numbers it prints for the starting scenario and after a change */
+  /* Saved R600 reduction and reoxidation results. */
   await pg.click('.wstab[data-ws="ws-distribution"]');
-  await pg.waitForTimeout(6000);
-  if (await pg.inputValue('#vdScenario') !== 'S1') throw new Error('Distribution must open on S1');
-  for (const id of ['S1', 'S2', 'S3', 'S4', 'S5']) {
-    await pg.selectOption('#vdSample', 'A600');
-    await pg.selectOption('#vdScenario', id);
-    const ok = await pg.evaluate((id) => {
-      const v = window.VacancyDistribution, s = v.state();
-      const q = v.scenarios.find(q => q.id === id);
-      const data = JSON.parse(document.getElementById('tof-data').textContent);
-      return s.sample === 'A600' && s.map === q.map && s.cutoff === q.cutoff && s.dG === q.dG
-        && s.f110 === 0.75 && s.eps === 'a_axis' && s.reactive === 'BRI'
-        && data.samples.every(sample => Number.isFinite(v.caseOf(sample, v.point(s), s.reactive).tof));
-    }, id);
-    if (!ok) throw new Error('Invalid assumption set: ' + id);
-  }
-  await pg.selectOption('#vdDG', '-0.4');
-  if (await pg.inputValue('#vdScenario') !== 'custom') throw new Error('Custom parameters not recognised');
-  await pg.click('#vdReset');
-  if (await pg.inputValue('#vdScenario') !== 'S1') throw new Error('Reset must restore S1');
-  if (await pg.locator('#vdTablePanel').isVisible()) throw new Error('TOF table must start collapsed');
-  await pg.click('#vdTableToggle');
-  if (!await pg.locator('#vdTablePanel').isVisible()) throw new Error('TOF table did not open');
-  await pg.click('#vdTableToggle');
-  for (const sampleName of ['A600', 'R500', 'R600', 'R800', 'R1000', 'R1100']) {
-    await pg.selectOption('#vdSample', sampleName);
-    const valid = await pg.evaluate((name) => {
-      const marks = [...document.querySelectorAll('#figVacancyProfile g[data-percent]')];
-      return marks.length === 1260 && marks.every(m => Number(m.dataset.percent) > 0 && Number(m.dataset.percent) <= 100 && Number(m.dataset.depth) >= 0)
-        && document.getElementById('vdProfileSample').textContent.includes(name);
-    }, sampleName);
-    if (!valid) throw new Error('Invalid regional vacancy figure: ' + sampleName);
-  }
-  await pg.click('#vdReset');
-  await pg.locator('#vdSlabCanvas').scrollIntoViewIfNeeded();
-  await pg.waitForTimeout(700);
-  out.drew.figTofRange = await pg.evaluate(() =>
-    document.querySelector('#figTofRange svg') ? 1 : 0);
-  out.tofMarks = await pg.evaluate(() => {
-    const s = document.querySelector('#figTofRange svg');
-    const V = window.VacancyDistribution;
-    const data = JSON.parse(document.getElementById('tof-data').textContent);
-    const marks = [...s.querySelectorAll('g[data-scenario]')];
-    return { count: marks.length,
-      perScenario: V.scenarios.map(sc => marks.filter(m => m.dataset.scenario === sc.id).length),
-      exact: marks.every(m => {
-        const sc = V.scenarios.find(q => q.id === m.dataset.scenario);
-        const sample = data.samples.find(q => q.sample === m.dataset.sample);
-        const p = V.point({...sc, f110:0.75, eps:'a_axis'});
-        return Number(m.dataset.tof) === V.caseOf(sample, p, 'BRI').tof;
-      }),
-      oldBaseline: s.textContent.includes('SI Note 2a') };
+  out.release = await pg.evaluate(() => {
+    const d = window.TimeDependentDistribution.data;
+    return {figures:['jrA','jrB','jrC','jrD'].every(id=>document.querySelector('#'+id+' svg')),
+      finite:[...document.querySelectorAll('#ws-distribution path')].every(p=>!/(NaN|Infinity)/.test(p.getAttribute('d')||'')),
+      measured:!!document.querySelector('[data-measured="94"]'),
+      diameter:d.diameter_nm, reduction:d.reduction.at(-1).vacancy_total_umol_g,
+      reoxidation:d.reoxidation.at(-1).vacancy_total_umol_g};
   });
-  /* the rendered panels: both images decoded, and a hover over the cut
-     face finds a layer in the mask and shows its amount */
-  out.renders = await pg.evaluate(() => {
-    const im = document.getElementById('vdParticleImg');
-    return im && im.complete ? im.naturalWidth : 0; });
-  /* the surface canvas: painted, and moving (two frames differ) */
-  const snap = () => pg.evaluate(() => {
-    const c = document.getElementById('vdSlabCanvas'), g = c.getContext('2d');
-    const d = g.getImageData(0, 0, c.width, c.height).data;
-    let ink = 0, h = 0;
-    for (let i = 3; i < d.length; i += 4) if (d[i] > 0) { ink += 1; h = (h * 31 + d[i - 1] + d[i - 2]) % 1000000007; }
-    return { ink: ink / (c.width * c.height), h };
-  });
-  out.slab1 = await snap();
-  await pg.waitForTimeout(700);
-  out.slab2 = await snap();
-  out.slabVacant = await pg.evaluate(() => window.VacancyDistribution.slab.vacant().length);
-  out.slabCaption = await txt('vdSlabCaption');
-  out.hover = await pg.evaluate(() => {
-    const st = document.getElementById('vdParticleStage').getBoundingClientRect();
-    const hits = {};
-    for (let fy = 0.3; fy < 0.8; fy += 0.01) for (let fx = 0.3; fx < 0.8; fx += 0.01) {
-      const ev = { clientX: st.left + fx * st.width, clientY: st.top + fy * st.height };
-      const L = window.VacancyDistribution.layerAt(ev);
-      if (L) (hits[L] = hits[L] || []).push([fx, fy]);
-    }
-    /* the centroid of each region, well inside it */
-    const found = {};
-    for (const L in hits) {
-      const h = hits[L], n = h.length;
-      found[L] = [h.reduce((a, q) => a + q[0], 0) / n, h.reduce((a, q) => a + q[1], 0) / n];
-    }
-    return found;
-  });
-  if (out.hover.bulk) {
-    await pg.locator('#vdParticleStage').scrollIntoViewIfNeeded();
-    const box = await pg.locator('#vdParticleStage').boundingBox();
-    await pg.mouse.move(box.x + out.hover.bulk[0] * box.width, box.y + out.hover.bulk[1] * box.height);
-    await pg.waitForTimeout(200);
-    out.tip = await txt('vdTip');
-  }
-  out.vdKpis = await txt('vdKpis');
-  out.vdState = await pg.evaluate(() => window.VacancyDistribution.state());
-  await pg.selectOption('#vdSample', 'R1000');
-  await pg.selectOption('#vdReactive', 'ISO_z4');
-  await pg.waitForTimeout(3000);
-  out.vdKpis2 = await txt('vdKpis');
-  out.vdState2 = await pg.evaluate(() => window.VacancyDistribution.state());
-  out.slabShown = await pg.evaluate(() => window.VacancyDistribution.slabShown());
+  const before = await pg.locator('#jrB').innerHTML();
+  await pg.selectOption('#jrReduction','0');
+  out.release.changed = before !== await pg.locator('#jrB').innerHTML();
+  await pg.locator('#ws-distribution details').filter({has:pg.locator('summary',{hasText:'Method'})}).locator('summary').click();
+  out.release.math = await pg.locator('#ws-distribution math').count();
 
   out.scope = await pg.evaluate(() =>
     document.body.textContent.replace(/\s+/g, ' ').indexOf('is inferred from the measured rates') >= 0);
@@ -265,36 +176,14 @@ def check(out):
        'Ti10O19' in out['pure_h2'].replace('₁', '1').replace('₀', '0')
        .replace('₉', '9').replace('Ti10O19', 'Ti10O19'), out['pure_h2'])
 
-    tof = json.load(open(os.path.join(ROOT, 'paper_outputs', 'tof_range.json')))
-    n = len(tof['samples'])
-    ok('the TOF figure shows five saved scenarios for every sample',
-       out['tofMarks'] == {'count': 5*n, 'perScenario': [n]*5, 'exact': True, 'oldBaseline': False},
-       out['tofMarks'])
-    ok('the grain render decoded', out['renders'] >= 1000, out['renders'])
-    ok('the surface canvas is drawn', out['slab1']['ink'] > 0.15, out['slab1'])
-    ok('the surface canvas moves', out['slab1']['h'] != out['slab2']['h'], (out['slab1'], out['slab2']))
-    import re
-    counts = re.search(r'(\d+) in the top layer.*?, (\d+) below', out['slabCaption'])
-    ok('the surface caption counts the vacancies drawn',
-       bool(counts) and sum(map(int, counts.groups())) == out['slabVacant'],
-       (out['slabVacant'], out['slabCaption']))
-    ok('hover finds all three layers in the mask',
-       set(out['hover']) == {'surface', 'subsurface', 'bulk'}, out['hover'])
-    ok('hover on the bulk shows its calculated amount',
-       'Bulk, calculated' in (out.get('tip') or ''), out.get('tip'))
-    for key, state in (('vdKpis', out['vdState']), ('vdKpis2', out['vdState2'])):
-        ax = tof['axes']
-        i = ax['energy_map'].index(state['map'])
-        i = i * len(ax['cutoff_nm']) + ax['cutoff_nm'].index(state['cutoff'])
-        i = i * len(ax['dG_eV']) + ax['dG_eV'].index(state['dG'])
-        i = i * len(ax['f110']) + ax['f110'].index(state['f110'])
-        i = i * len(ax['eps']) + [e['key'] for e in ax['eps']].index(state['eps'])
-        smp = [q for q in tof['samples'] if q['sample'] == state['sample']][0]
-        n = smp['cases']['sites'][i][tof['reactive'].index(state['reactive'])]
-        want = float('%.3g' % (smp['rate_co_umol_g_s'] / n))
-        ok('%s %s: the page prints the stored TOF' % (state['sample'], state['reactive']),
-           ('%g' % want) in out[key], (want, out[key]))
-    ok('the surface panel follows the sample', out['slabShown'] == 'R1000', out['slabShown'])
+    q = out['release']
+    ok('R600 release has four finite SVG figures', q['figures'] and q['finite'], q)
+    ok('R600 release shows measured inventory', q['measured'], q)
+    ok('R600 release preserves 900 nm geometry', q['diameter'] == 900, q)
+    ok('R600 release preserves reduction endpoint', abs(q['reduction'] - 95.7192445) < 1e-5, q)
+    ok('R600 release preserves reoxidation endpoint', abs(q['reoxidation'] - 14.19409) < 1e-4, q)
+    ok('R600 profile selection changes the figure', q['changed'], q)
+    ok('R600 release typesets all four math blocks', q['math'] >= 4, q)
 
     return fails
 
